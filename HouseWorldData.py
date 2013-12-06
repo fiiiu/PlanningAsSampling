@@ -2,6 +2,7 @@
 import HouseWorld
 import HouseWorldTrial
 import DemographicData
+import CBQData
 import parameters
 
 import datetime
@@ -11,14 +12,18 @@ import platform
 
 class HouseWorldData:
 
-
+    __shared_state = {}
+    
     def __init__(self):
+        self.__dict__ = self.__shared_state
+        
         self.house_world=HouseWorld.HouseWorld()
         self.data_directory=parameters.data_directory
         self.data_filename=parameters.data_filename
 
         #self.demographic_filename=parameters.demographic_filename
         self.demographic_data=DemographicData.DemographicData()
+        self.cbq_data=CBQData.CBQData()
 
         self.subject_ids=[]
         self.dates=[]
@@ -69,18 +74,23 @@ class HouseWorldData:
             trial=HouseWorldTrial.HouseWorldTrial(subject_id, date, success, min_moves, n_moves, initial_state, states, moves)
 
             if subject_id in self.datadict.keys():
-                self.datadict[subject_id][2].append(trial)
+                self.datadict[subject_id][3].append(trial)
             else:
-                self.datadict[subject_id]=[0,0,[trial]]
+                self.datadict[subject_id]=[0,0,0,[trial]]
 
         #load demographics
         self.demographic_data.load()
+
+        #load CBQ
+        self.cbq_data.load()
 
         #maybe i don't need this.. 
         for subject in self.demographic_data.get_subjects():
             self.datadict[subject][0]=self.demographic_data.get_sex(subject)
             self.datadict[subject][1]=self.demographic_data.get_age(subject)
-        
+        for subect in self.cbq_data.get_subjects():
+            self.datadict[subject][2]=self.cbq_data.get_scores(subject)
+
         self.data_loaded=True
 
 
@@ -90,6 +100,9 @@ class HouseWorldData:
     def get_sex(self, subject, boolean=False):
         return self.demographic_data.get_sex(subject, boolean)
 
+    def get_scores(self, subject):
+        return self.cbq_data.get_scores(subject)
+        
          
     def select_actions(self, initial_state, subjects=None, filter_correct=False):
 

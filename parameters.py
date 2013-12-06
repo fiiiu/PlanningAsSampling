@@ -14,6 +14,7 @@ else:
 data_filename='data_AS.mat'
 demographic_filename='Genero_Edad.txt'
 group_filename='Grupos_experimentales.txt'
+CBQ_filename='CBQ_MM2010.xls'
 
 
 #####
