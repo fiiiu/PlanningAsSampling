@@ -81,44 +81,38 @@ def kullback_leibler(p, q):
 
 
 
-def G(p, q):
+def G(P, Q):
 
     """
-    Computes G.
-    differs from D_KL in normalization, depends on the total counts on p. 
-    p and q need not be normalized, what about number of entries?!? --FOR NOW, I DONT CARE
-    DO check equal length
+    Computes G statistic for distribution P respect to distribution Q.
+    differs from D_KL in normalization, depends on the total counts on P. 
+    P and Q need not be normalized.
+    Checks equal length.
     """
-    #~ 
-    #~ pnp=np.array(p, dtype=float)
-    #~ qnp=np.array(q, dtype=float)
-    #~ 
         
-    if len(p) != len(q):
+    if len(P) != len(Q):
         print('distributions should have identical domains')
         return -1
         
-    #convert to numpy arrays: no normalization for f, normalize respect to p for fhat.
-    #f=np.array(p, dtype=float) #[float(el) for el in p])
-    #fhat=np.array(q, dtype=float) #[float(el) for el in q])
-
-    pn=np.array([float(el)/np.linalg.norm(p) for el in p])
-    qn=np.array([float(el)/np.linalg.norm(q) for el in q])
+    #convert to numpy arrays, normalize for calculation.
+    Pn=np.array([float(el)/np.linalg.norm(P) for el in P])
+    Qn=np.array([float(el)/np.linalg.norm(Q) for el in Q])
     
     #compute G
     G=0
-    for i in range(len(pn)):
+    for i in range(len(Pn)):
         #return if f has counts where fhat doesn't
-        if qn[i]==0 and pn[i]!=0:
+        if Qn[i]==0 and Pn[i]!=0:
             print('G not defined')
             return -1
         #f's equal to 0 contribute 0
-        if pn[i]!=0:
-            G+=np.log(pn[i]/qn[i])*pn[i]
+        if Pn[i]!=0:
+            G+=np.log(Pn[i]/Qn[i])*Pn[i]
             
-    G=2*sum(p)*G
+    G=2*sum(P)*G
 
     return G
+
 
 
 def G_independence(rctable):
@@ -154,5 +148,4 @@ def G_independence(rctable):
     dof=(nptable.shape[0]-1)*(nptable.shape[1]-1)
     pvalue=1-stats.chi2.cdf(G,dof)
     return G, pvalue, dof
-
 

@@ -10,12 +10,16 @@ ca.compute()
 
 #ca.filter_oldie()
 #ca.G_vs_age()
+#ca.G_vs_grade()
 
 #ca.G_vs_surgency()
 
 #ca.G_vs_naffect()
 
-ca.G_vs_effcontrol()
+#ca.G_vs_effcontrol()
+
+ca.explore_modalplay()
 
 
- 
+ca.modal_hist()
+
