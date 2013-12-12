@@ -79,7 +79,7 @@ class HouseWorld:
     
   def legal_actions(self, state):
     """ Return list of actions that can be performed in a given state"""
-    return [ind for ind, act in enumerate(self.transition_matrix) if act[self.state_id(state)] != -999999]
+    return [ind for ind, act in enumerate(self.transition_matrix) if act[self.state_id(state)] != -1]
     
         
   def generate_transition_matrix(self):

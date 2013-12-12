@@ -220,3 +220,40 @@ class DataParser:
 
         return days, move_choices
 
+
+
+
+    def intraday_choices(self, subject_id, initial_state, surrogate=False):
+        """
+        TODO
+        """
+
+        dates, moves=self.data.select_actions(initial_state, subjects=[subject_id], filter_correct=False)
+
+        if len(dates)==0:
+            print "No selected dates"
+            return
+
+        #This is cumbersome. Fix with HouseWorld
+        all_moves=[self.world.action_descriptions[action]
+         for action in self.world.legal_actions(self.world.state_id(str(initial_state)))]
+
+        different_moves=len(all_moves)
+        earliest_date=min(dates)
+        counter=-1
+        days=[]
+        move_choices=[]
+        
+        if surrogate:
+            random.shuffle(moves)
+        
+        for ind, date in enumerate(dates):
+            interval=(date.date()-earliest_date.date())
+            if interval not in days:
+                counter+=1
+                days.append(interval)
+                move_choices.append([])#0 for i in range(len(all_moves))])
+            move_choices[counter].append(moves[ind])
+
+        return days, move_choices
+
