@@ -22,8 +22,11 @@ class IndependenceAnalyzer:
 
     def G(self, subject):
         _, choices=self.parser.parsed_choices(subject, self.initial_state)
-        G, pvalue, dof=utils.G_independence(choices)
-        return G, pvalue, dof
+        if choices is not None:
+            G, pvalue, dof=utils.G_independence(choices)
+            return G, pvalue, dof
+        else:
+            return None
 
 
     def modal_play(self, subject):
@@ -48,9 +51,21 @@ class IndependenceAnalyzer:
         
         # return min(Gs)
 
-    def median_G(self, subject):
-        choices=self.parser.median_parsed_choices(subject, self.initial_state)
-        G, pvalue, dof=utils.G_independence(choices)
-        return G, pvalue, dof
 
-        
+    def quantile_G(self, subject, nquantiles):
+        choices=self.parser.quantile_parsed_choices(subject, self.initial_state, nquantiles)
+        if choices is not None:
+            G, pvalue, dof=utils.G_independence(choices)
+            return G, pvalue, dof
+        else:
+            return None
+
+
+    def multistate_G(self, subject, initial_states):
+        _, choices=self.parser.parsed_choices_correct(subject, initial_states)
+        if choices is not None:
+            G, pvalue, dof=utils.G_independence(choices)
+            return G, pvalue, dof
+        else:
+            return None
+

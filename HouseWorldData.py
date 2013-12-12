@@ -126,7 +126,7 @@ class HouseWorldData:
         
         for trial in range(self.trial_amount):
             if self.subject_ids[trial] in subjects and\
-             self.initial_states[trial]==initial_state:
+             self.initial_states[trial] ==self.raw_state(initial_state):
                 if filter_correct:
                     if self.successes[trial]==1:
                         dates.append(self.dates[trial])
@@ -144,4 +144,6 @@ class HouseWorldData:
         return list(set(self.subject_ids))
                 
                 
+    def raw_state(self, state):
+        return int(state)
 

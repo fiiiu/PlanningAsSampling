@@ -18,11 +18,11 @@ class HouseWorld:
       [3,1,2,0],[0,1,2,3],[0,3,1,2],[2,3,0,1],[3,0,2,1],
       [0,3,2,1],[1,0,2,3],[1,3,0,2],[1,3,2,0]]
 
-    self.state_names = [('1230', '0231', '1032', '1203', 
+    self.state_names = ['1230', '0231', '1032', '1203', 
       '0132', '0213', '2031', '3201', '2013', '2130',
       '3102', '3210', '2103', '2310', '3012',
       '3120', '0123', '0312', '2301', '3021',
-      '0321', '1023', '1302', '1320')]
+      '0321', '1023', '1302', '1320']
     
     self.distances = [0,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,7]
     self.misplaced = [0,1,1,1,2,2,2,2,3,2,3,2,3,3,3,3,3,3,3,3,3,2,2,2]
@@ -33,7 +33,7 @@ class HouseWorld:
     
       
   def distance_to_goal(self, state):
-    return self.distances[state]
+    return self.distances[self.state_id(state)]
     
   
   def action_id(self, action):
@@ -42,10 +42,11 @@ class HouseWorld:
     #  action_id=self.action_names.index(action)
     if type(action) is tuple and action in self.action_descriptions:
       action_id=self.action_descriptions.index(action)
-    elif type(action) is int and 0 <= action < 10:
+    elif type(action) is int and 0 <= action < len(self.action_descriptions):
       action_id=action
     else:
-      action_id=-1
+      print 'wrong action'
+      action_id=-999999
     return action_id
     
   
@@ -55,10 +56,11 @@ class HouseWorld:
       state_id=self.state_names.index(state)
     elif type(state) is list and state in self.state_descriptions:
       state_id=self.state_descriptions.index(state)
-    elif type(state) is int and 0 <= state < 10:
+    elif type(state) is int and 0 <= state < len(self.state_descriptions):
       state_id=state
     else:
-      state_id=-1
+      print 'wrong state {0}'.format(state)
+      state_id=-999999
     return state_id
     
       
@@ -77,7 +79,7 @@ class HouseWorld:
     
   def legal_actions(self, state):
     """ Return list of actions that can be performed in a given state"""
-    return [ind for ind, act in enumerate(self.transition_matrix) if act[state] != -1]
+    return [ind for ind, act in enumerate(self.transition_matrix) if act[self.state_id(state)] != -999999]
     
         
   def generate_transition_matrix(self):
@@ -99,13 +101,18 @@ class HouseWorld:
   def next_state(self, state, action):
     """ Compute next state. Accepts both descriptions and indices for actions """
     action_id=self.action_id(action)
-    if action_id != -1:
-      return self.transition_matrix[action_id][state]
+    state_id=self.state_id(state)
+    if action_id != -999999:
+      return self.transition_matrix[action_id][state_id]
     else:
-      return -1
+      return -999999
       
       
-    
+  def action_correct(self, state, action):
+    if self.distance_to_goal(self.next_state(state, action)) < self.distance_to_goal(state):
+      return True
+    else:
+      return False
     
     
     
