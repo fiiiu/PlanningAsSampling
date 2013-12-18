@@ -3,6 +3,7 @@ import HouseWorldData
 import IndependenceAnalyzer
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 
 class CorrelationAnalyzer:
 
@@ -25,6 +26,10 @@ class CorrelationAnalyzer:
         self.naffect=np.zeros(len(self.data.get_subjects()), dtype=int)
         self.effcontrol=np.zeros(len(self.data.get_subjects()), dtype=int)
         self.modalplay=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_phi=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_G=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_p=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_dof=np.zeros(len(self.data.get_subjects()), dtype=float)
 
 
         for index, subject in enumerate(self.data.get_subjects()):
@@ -38,6 +43,10 @@ class CorrelationAnalyzer:
             self.naffect[index]=naffect
             if not np.isnan(effcontrol):
                 self.effcontrol[index]=effcontrol
+
+            self.alt_phi[index], self.alt_G[index], self.alt_p[index], self.alt_dof[index]=\
+            self.independence.kid_alternance(subject)
+
 
 
 
@@ -95,3 +104,74 @@ class CorrelationAnalyzer:
                 print 'subject {0}, H={1}, choices={5}, G={2}, Age={3}, Sex={4}'.format(subject, self.modalplay[index],
                     self.G[index], self.age[index], self.sex[index], choices)
 
+
+    def alt_vs_age(self, phi=False):
+        if not phi:
+            x=self.age[np.isfinite(self.alt_G) & (self.age<100)]
+            y=self.alt_G[np.isfinite(self.alt_G)& (self.age<100)]
+        else:
+            #or use phi:       
+            x=self.age[np.isfinite(self.alt_phi)& (self.age<100)]
+            y=self.alt_phi[np.isfinite(self.alt_phi)& (self.age<100)]
+        
+        self.plot_and_correlate(x,y)
+
+
+
+    def alt_vs_sex(self):
+        boys=self.alt_G[self.sex]
+        girls=self.alt_G[-self.sex]
+        
+        #use this instead for phi measure
+        #boys=self.alt_phi[np.isfinite(self.alt_phi) & self.sex]
+        #girls=self.alt_phi[np.isfinite(self.alt_phi) & -self.sex]
+
+        ttest=stats.ttest_ind(boys, girls)
+        print "boys/girls t:{0}, p:{1}".format(ttest[0],ttest[1])
+
+        plt.bar([0,1],[np.mean(girls), np.mean(boys)])
+        plt.show()
+        plt.bar
+
+
+    def alt_vs_surgency(self, phi=False):
+        
+        if not phi:
+            x=self.alt_G[np.isfinite(self.alt_G) & (self.surgency > 0)]
+            y=self.surgency[np.isfinite(self.alt_G) & (self.surgency > 0)]
+        else:
+            #or use phi:       
+            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.surgency > 0)]
+            y=self.surgency[np.isfinite(self.alt_phi) & (self.surgency > 0)]
+        
+        self.plot_and_correlate(x,y)
+
+
+    def alt_vs_naffect(self, phi=False):
+        if not phi:
+            x=self.alt_G[np.isfinite(self.alt_G) & (self.naffect > 0)]
+            y=self.naffect[np.isfinite(self.alt_G) & (self.naffect > 0)]
+        else:
+            #or
+            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.naffect > 0)]
+            y=self.naffect[np.isfinite(self.alt_phi) & (self.naffect > 0)]
+        
+        self.plot_and_correlate(x,y)
+            
+    def alt_vs_effcontrol(self, phi=False):
+        if not phi:
+            x=self.alt_G[np.isfinite(self.alt_G) & (self.effcontrol > 0)]
+            y=self.effcontrol[np.isfinite(self.alt_G) & (self.effcontrol > 0)]
+        else:
+            #or
+            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.effcontrol > 0)]
+            y=self.effcontrol[np.isfinite(self.alt_phi) & (self.effcontrol > 0)]
+        
+        self.plot_and_correlate(x,y)
+
+
+    def plot_and_correlate(self, x, y):
+        rtest=stats.pearsonr(x, y)
+        print "correlation r:{0}, p:{1}".format(rtest[0],rtest[1])
+        plt.plot(x, y, 'o')
+        plt.show()

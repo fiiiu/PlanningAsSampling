@@ -133,3 +133,42 @@ class IndependenceAnalyzer:
         Gt,pt,doft=utils.G_independence(table)
         return table, (Gt,pt,doft), (G, pval, dof)
 
+
+    def kid_alternance(self, subject):
+        all_choices=[self.parser.world.action_descriptions[action]
+         for action in self.parser.world.legal_actions(self.initial_state)]
+        
+        nchoices=len(all_choices)
+
+        days, move_choices=self.parser.intraday_choices(subject, self.initial_state)
+        #compute marginal
+        kid_marginal=np.zeros(nchoices)
+        for daily_moves in move_choices:
+            for move in daily_moves:
+                kid_marginal[all_choices.index(move)]+=1
+        #normalize
+        kid_marginal=kid_marginal/np.sum(kid_marginal)
+
+        #compute repetitions
+        kid_table=np.zeros((nchoices, nchoices))
+        for daily_moves in move_choices:
+            for move_pair in zip(daily_moves, daily_moves[1:]):
+                rowind=all_choices.index(move_pair[0])
+                colind=all_choices.index(move_pair[1])
+                kid_table[rowind, colind]+=1
+
+        independent_p=np.zeros(2) #independent distribution. [0] is Repeat, [1] is Alternate.
+        actual_p=np.zeros(2) #same from actual data. 
+        for i in range(len(kid_marginal)):
+            for j in range(len(kid_marginal)):
+                independent_p[i!=j]+=kid_marginal[i]*kid_marginal[j]
+                actual_p[i!=j]+=kid_table[i,j]
+        
+        #scale to data counts
+        independent_p=independent_p*sum(actual_p)
+        
+        G, pval, dof=utils.G_independence(np.array([actual_p, independent_p]))
+        table=np.array([actual_p, independent_p])
+        phi=table[0,0]/table[0,1]-table[1,0]/table[1,1]
+        return phi, G, pval, dof
+        
