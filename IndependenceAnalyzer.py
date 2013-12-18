@@ -70,14 +70,14 @@ class IndependenceAnalyzer:
             return None
 
 
-    def markov_intraday(self):
+    def markov_intraday(self, consecutives=False):
         all_choices=[self.parser.world.action_descriptions[action]
          for action in self.parser.world.legal_actions(self.initial_state)]
         nchoices=len(all_choices)
         table=np.zeros((nchoices, nchoices))
 
         for subject in self.parser.data.get_subjects():
-            days, move_choices=self.parser.intraday_choices(subject, self.initial_state)
+            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives)
             for daily_moves in move_choices:
                 for move_pair in zip(daily_moves, daily_moves[1:]):
                     rowind=all_choices.index(move_pair[0])
@@ -87,7 +87,7 @@ class IndependenceAnalyzer:
         return table, utils.G_independence(table)
 
 
-    def alternance_analysis(self):
+    def alternance_analysis(self, consecutives=False):
         all_choices=[self.parser.world.action_descriptions[action]
          for action in self.parser.world.legal_actions(self.initial_state)]
         nchoices=len(all_choices)
@@ -98,7 +98,7 @@ class IndependenceAnalyzer:
         dof=np.zeros(len(subjects))
         
         for ind, subject in enumerate(subjects):
-            days, move_choices=self.parser.intraday_choices(subject, self.initial_state)
+            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives)
             #compute marginal
             kid_marginal=np.zeros(nchoices)
             for daily_moves in move_choices:

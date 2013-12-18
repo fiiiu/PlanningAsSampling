@@ -104,7 +104,7 @@ class HouseWorldData:
         return self.cbq_data.get_scores(subject)
         
          
-    def select_actions(self, initial_state, subjects=None, filter_correct=False):
+    def select_actions(self, initial_state, subjects=None, filter_correct=False, tag_consecutives=False):
 
         """
         Selects action for given initial state and subjects, possibly filtering successful trials.
@@ -113,13 +113,16 @@ class HouseWorldData:
             initial_state: initial state.
             subjects (list): subjects to include.
             filter_correct (bool): whether to filter for successful trials.
+            tag_consecutives (bool): whether to tag trials with no intermediates with different initial state
         Returns:
             dates (list): list of selected dates.
             moves (list): list of selected moves.
+            consecutives (list of bool): list of whether moves are consecutive in play or not.
         """
      
         dates=[]
         moves=[]
+        consecutives=[]
         
         if subjects is None:
             subjects=set(self.subject_ids)
@@ -134,8 +137,17 @@ class HouseWorldData:
                 else:
                     dates.append(self.dates[trial])
                     moves.append(tuple(self.movess[trial][0]))
+                    if tag_consecutives:
+                        if trial==0:
+                            consecutives.append(True)
+                        else:
+                            consecutives.append(self.initial_states[trial]==self.initial_states[trial-1])
+                        
 
-        return dates, moves
+        if tag_consecutives:
+            return dates, moves, consecutives
+        else:
+            return dates, moves
             
 
     
