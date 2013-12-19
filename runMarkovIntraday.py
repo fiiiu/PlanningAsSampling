@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 ia=IndependenceAnalyzer.IndependenceAnalyzer()
 
 
-# table, Gstats, Kstats=ia.alternance_analysis(consecutives=True)
+# table, Gstats, Kstats=ia.alternance_analysis(consecutives=False)
 
 # print table
 # print Gstats

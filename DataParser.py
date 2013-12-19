@@ -235,7 +235,7 @@ class DataParser:
 
         if len(dates)==0:
             print "No selected dates"
-            return
+            return None, None
 
         #This is cumbersome. Fix with HouseWorld
         all_moves=[self.world.action_descriptions[action]

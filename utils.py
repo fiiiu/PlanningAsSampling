@@ -62,8 +62,8 @@ def kullback_leibler(p, q):
         return -1
         
     #normalize & convert to numpy arrays
-    pn=np.array([float(el)/np.linalg.norm(p) for el in p])
-    qn=np.array([float(el)/np.linalg.norm(q) for el in q])
+    pn=np.array([float(el)/sum(p) for el in p])
+    qn=np.array([float(el)/sum(q) for el in q])
     
     #compute divergence
     Dpq=0
@@ -81,7 +81,7 @@ def kullback_leibler(p, q):
 
 
 
-def G(P, Q):
+def G_OLD(P, Q):
 
     """
     Computes G statistic for distribution P respect to distribution Q.
@@ -95,8 +95,8 @@ def G(P, Q):
         return -1
         
     #convert to numpy arrays, normalize for calculation.
-    Pn=np.array([float(el)/np.linalg.norm(P) for el in P])
-    Qn=np.array([float(el)/np.linalg.norm(Q) for el in Q])
+    Pn=np.array([float(el)/sum(P) for el in P])
+    Qn=np.array([float(el)/sum(Q) for el in Q])
     
     #compute G
     G=0
@@ -112,6 +112,41 @@ def G(P, Q):
     G=2*sum(P)*G
 
     return G
+
+
+
+def G_goodness_of_fit(P, Q):
+
+    """
+    Computes G statistic for distribution P respect to distribution Q.
+    differs from D_KL in normalization, depends on the total counts on P. 
+    P and Q need not be normalized.
+    Checks equal length.
+    """
+        
+    if len(P) != len(Q):
+        print('distributions should have identical domains')
+        return -1
+        
+    #convert to numpy arrays.
+    O=np.array(P, dtype=float)
+    E=np.array(Q, dtype=float)
+    
+    #compute G
+    G=0
+    for i in range(len(E)):
+        #return if f has counts where fhat doesn't
+        if E[i]==0 and O[i]!=0:
+            print('G not defined')
+            return -1
+        #f's equal to 0 contribute 0
+        if O[i]!=0:
+            G+=2*O[i]*np.log(O[i]/E[i])
+    
+    dof=len(E)-1      
+    pvalue=1-stats.chi2.cdf(G,dof)
+    return G, pvalue, dof
+
 
 
 

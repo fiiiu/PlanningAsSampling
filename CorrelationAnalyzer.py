@@ -78,8 +78,12 @@ class CorrelationAnalyzer:
 
 
     def G_vs_surgency(self):
-        plt.plot(self.G, self.surgency, 'o')
-        plt.show()
+        #plt.plot(self.G, self.surgency, 'o')
+        #plt.show()
+        x=self.G[np.isfinite(self.G) & (self.surgency > 0)]
+        y=self.surgency[np.isfinite(self.G) & (self.surgency > 0)]
+        self.plot_and_correlate(x,y)
+
 
     def G_vs_naffect(self):
         plt.plot(self.G, self.naffect, 'o')
@@ -174,4 +178,9 @@ class CorrelationAnalyzer:
         rtest=stats.pearsonr(x, y)
         print "correlation r:{0}, p:{1}".format(rtest[0],rtest[1])
         plt.plot(x, y, 'o')
+        plt.show()
+
+
+    def phi_hist(self):
+        plt.hist(self.alt_phi[np.isfinite(self.alt_phi)])
         plt.show()

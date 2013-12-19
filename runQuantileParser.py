@@ -8,12 +8,12 @@ ia=IndependenceAnalyzer.IndependenceAnalyzer()
 
 subjects=ia.parser.data.get_subjects()
 
-states=['1302', '1023']
 Gi=np.zeros(len(subjects))
 pvali=np.zeros(len(subjects))
 dofi=np.zeros(len(subjects))
+
 for ind, subject in enumerate(subjects):
-    resi=ia.multistate_G(subject, states)
+    resi=ia.G(subject)
     if resi is not None:
         Gi[ind],pvali[ind],dofi[ind]=resi
 
@@ -24,6 +24,27 @@ plt.hist(pvali[np.isfinite(pvali)])
 plt.title('pvali')
 
 plt.show()
+
+
+
+#MULTISTATE
+# states=['1302', '1023']
+# states=['1320']
+# Gi=np.zeros(len(subjects))
+# pvali=np.zeros(len(subjects))
+# dofi=np.zeros(len(subjects))
+# for ind, subject in enumerate(subjects):
+#     resi=ia.multistate_G(subject, states)
+#     if resi is not None:
+#         Gi[ind],pvali[ind],dofi[ind]=resi
+
+
+# print 'p median={0}'.format(np.median(pvali))
+
+# plt.hist(pvali[np.isfinite(pvali)])
+# plt.title('pvali')
+
+# plt.show()
 
 # G2=np.zeros(len(subjects))
 # pval2=np.zeros(len(subjects))
