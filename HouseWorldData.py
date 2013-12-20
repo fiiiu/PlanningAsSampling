@@ -8,6 +8,7 @@ import parameters
 import datetime
 import scipy.io
 import platform
+import numpy as np
 
 
 class HouseWorldData:
@@ -103,7 +104,19 @@ class HouseWorldData:
     def get_scores(self, subject):
         return self.cbq_data.get_scores(subject)
         
-         
+    def get_performance(self, subject, initial_state=None):
+        score=0
+        count=0
+        for index in range(len(self.successes)):
+            if subject==self.subject_ids[index]:
+                if initial_state is None or\
+                    self.initial_states[index]==self.raw_state(initial_state):
+                    score+=self.successes[index]
+                    count+=1
+        return float(score)/count
+
+        
+
     def select_actions(self, initial_state, subjects=None, filter_correct=False, tag_consecutives=False):
 
         """
@@ -142,7 +155,7 @@ class HouseWorldData:
                             consecutives.append(True)
                         else:
                             consecutives.append(self.initial_states[trial]==self.initial_states[trial-1])
-                        
+
 
         if tag_consecutives:
             return dates, moves, consecutives

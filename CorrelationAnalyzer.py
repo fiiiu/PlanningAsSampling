@@ -4,6 +4,7 @@ import IndependenceAnalyzer
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats
+import parameters
 
 class CorrelationAnalyzer:
 
@@ -26,11 +27,13 @@ class CorrelationAnalyzer:
         self.naffect=np.zeros(len(self.data.get_subjects()), dtype=int)
         self.effcontrol=np.zeros(len(self.data.get_subjects()), dtype=int)
         self.modalplay=np.zeros(len(self.data.get_subjects()), dtype=float)
-        self.alt_phi=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.phi=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.phi_p=np.zeros(len(self.data.get_subjects()), dtype=float)
         self.alt_G=np.zeros(len(self.data.get_subjects()), dtype=float)
         self.alt_p=np.zeros(len(self.data.get_subjects()), dtype=float)
         self.alt_dof=np.zeros(len(self.data.get_subjects()), dtype=float)
-
+        self.perfo=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.state_perfo=np.zeros(len(self.data.get_subjects()), dtype=float)
 
         for index, subject in enumerate(self.data.get_subjects()):
             self.age[index]=self.data.get_age(subject).as_number()
@@ -44,10 +47,10 @@ class CorrelationAnalyzer:
             if not np.isnan(effcontrol):
                 self.effcontrol[index]=effcontrol
 
-            self.alt_phi[index], self.alt_G[index], self.alt_p[index], self.alt_dof[index]=\
+            self.phi[index], self.phi_p[index], self.alt_G[index], self.alt_p[index], self.alt_dof[index]=\
             self.independence.kid_alternance(subject)
-
-
+            self.perfo[index]=self.data.get_performance(subject)
+            self.state_perfo[index]=self.data.get_performance(subject, parameters.starting_state)
 
 
   
@@ -115,8 +118,8 @@ class CorrelationAnalyzer:
             y=self.alt_G[np.isfinite(self.alt_G)& (self.age<100)]
         else:
             #or use phi:       
-            x=self.age[np.isfinite(self.alt_phi)& (self.age<100)]
-            y=self.alt_phi[np.isfinite(self.alt_phi)& (self.age<100)]
+            x=self.age[np.isfinite(self.phi)& (self.age<100)]
+            y=self.phi[np.isfinite(self.phi)& (self.age<100)]
         
         self.plot_and_correlate(x,y)
 
@@ -127,8 +130,8 @@ class CorrelationAnalyzer:
         girls=self.alt_G[-self.sex]
         
         #use this instead for phi measure
-        #boys=self.alt_phi[np.isfinite(self.alt_phi) & self.sex]
-        #girls=self.alt_phi[np.isfinite(self.alt_phi) & -self.sex]
+        #boys=self.phi[np.isfinite(self.phi) & self.sex]
+        #girls=self.phi[np.isfinite(self.phi) & -self.sex]
 
         ttest=stats.ttest_ind(boys, girls)
         print "boys/girls t:{0}, p:{1}".format(ttest[0],ttest[1])
@@ -145,8 +148,8 @@ class CorrelationAnalyzer:
             y=self.surgency[np.isfinite(self.alt_G) & (self.surgency > 0)]
         else:
             #or use phi:       
-            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.surgency > 0)]
-            y=self.surgency[np.isfinite(self.alt_phi) & (self.surgency > 0)]
+            x=self.phi[np.isfinite(self.phi) & (self.surgency > 0)]
+            y=self.surgency[np.isfinite(self.phi) & (self.surgency > 0)]
         
         self.plot_and_correlate(x,y)
 
@@ -157,8 +160,8 @@ class CorrelationAnalyzer:
             y=self.naffect[np.isfinite(self.alt_G) & (self.naffect > 0)]
         else:
             #or
-            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.naffect > 0)]
-            y=self.naffect[np.isfinite(self.alt_phi) & (self.naffect > 0)]
+            x=self.phi[np.isfinite(self.phi) & (self.naffect > 0)]
+            y=self.naffect[np.isfinite(self.phi) & (self.naffect > 0)]
         
         self.plot_and_correlate(x,y)
             
@@ -168,8 +171,8 @@ class CorrelationAnalyzer:
             y=self.effcontrol[np.isfinite(self.alt_G) & (self.effcontrol > 0)]
         else:
             #or
-            x=self.alt_phi[np.isfinite(self.alt_phi) & (self.effcontrol > 0)]
-            y=self.effcontrol[np.isfinite(self.alt_phi) & (self.effcontrol > 0)]
+            x=self.phi[np.isfinite(self.phi) & (self.effcontrol > 0)]
+            y=self.effcontrol[np.isfinite(self.phi) & (self.effcontrol > 0)]
         
         self.plot_and_correlate(x,y)
 
@@ -182,5 +185,31 @@ class CorrelationAnalyzer:
 
 
     def phi_hist(self):
-        plt.hist(self.alt_phi[np.isfinite(self.alt_phi)])
+        print "one sample t-test for mean different from 0, p={0}".format(stats.ttest_1samp(self.phi[np.isfinite(self.phi)], 0))
+        plt.hist(self.phi[np.isfinite(self.phi)])
         plt.show()
+
+    def phi_ps(self):
+        print self.phi_p
+        print np.median(self.phi_p)
+        plt.hist(self.phi_p[np.isfinite(self.phi_p)])
+        plt.show()
+
+    def phi_vs_phip(self):
+        x=self.phi[np.isfinite(self.phi)]
+        y=self.phi_p[np.isfinite(self.phi)]
+    
+        self.plot_and_correlate(x,y)
+
+    def phi_vs_perfo(self):
+        x=self.phi[np.isfinite(self.phi)]
+        y=self.perfo[np.isfinite(self.phi)]
+        self.plot_and_correlate(x,y)
+
+    def phi_vs_stateperfo(self):
+        x=self.phi[np.isfinite(self.phi)]
+        y=self.state_perfo[np.isfinite(self.phi)]
+        self.plot_and_correlate(x,y)
+
+
+    

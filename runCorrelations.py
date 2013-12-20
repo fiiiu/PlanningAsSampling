@@ -36,6 +36,13 @@ ca.compute()
 #ca.alt_vs_effcontrol(phi=True)
 
 
-ca.phi_hist()
+#ca.phi_hist()
+#ca.phi_ps()
+#ca.phi_vs_phip()
+
+
+ca.phi_vs_perfo()
+
+ca.phi_vs_stateperfo()
 
 

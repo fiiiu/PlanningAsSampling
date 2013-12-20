@@ -23,7 +23,7 @@ CBQ_filename='CBQ_MM2010.xls'
 #
 n_realizations=3         #realizations for kullback monte carlo
 filter_correct=False        #post select winning trials
-starting_state='1320'#1302'# '0321'#1302#1320#312#3210#3021#312#3210 #312    #for data analysis
+starting_state='2301'#1320'#0123'#3012'#2301'#Cou1320'#1302'# '0321'#1302#1320#312#3210#3021#312#3210 #312    #for data analysis
 
 
 #####
