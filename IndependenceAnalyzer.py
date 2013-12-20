@@ -144,61 +144,82 @@ class IndependenceAnalyzer:
         return table, (Gt,pvalt,doft), (G, pval, dof)
 
 
-    def kid_alternance(self, subject):
-        all_choices=[self.parser.world.action_descriptions[action]
-         for action in self.parser.world.legal_actions(self.initial_state)]
+    def kid_alternance(self, subject, initial_states=None):
+
+        total_table=np.zeros((2,2))
+        phi=0
+
+        if initial_states is None:
+            initial_states=[self.initial_state]
+
+        for initial_state in initial_states:
+
+            all_choices=[self.parser.world.action_descriptions[action]
+             for action in self.parser.world.legal_actions(initial_state)]
         
-        nchoices=len(all_choices)
+            nchoices=len(all_choices)
 
-        days, move_choices=self.parser.intraday_choices(subject, self.initial_state)
-        #compute marginal
-        kid_marginal=np.zeros(nchoices)
-        if move_choices is not None:
-            for daily_moves in move_choices:
-                for move in daily_moves:
-                    kid_marginal[all_choices.index(move)]+=1
-            #normalize
-            kid_marginal=kid_marginal/np.sum(kid_marginal)
+            days, move_choices=self.parser.intraday_choices(subject, initial_state)
+            #compute marginal
+            kid_marginal=np.zeros(nchoices)
+            if move_choices is not None:
+                for daily_moves in move_choices:
+                    for move in daily_moves:
+                        kid_marginal[all_choices.index(move)]+=1
+                #normalize
+                kid_marginal=kid_marginal/np.sum(kid_marginal)
 
-            #compute repetitions
-            kid_table=np.zeros((nchoices, nchoices))
-            for daily_moves in move_choices:
-                for move_pair in zip(daily_moves, daily_moves[1:]):
-                    rowind=all_choices.index(move_pair[0])
-                    colind=all_choices.index(move_pair[1])
-                    kid_table[rowind, colind]+=1
+                #compute repetitions
+                kid_table=np.zeros((nchoices, nchoices))
+                for daily_moves in move_choices:
+                    for move_pair in zip(daily_moves, daily_moves[1:]):
+                        rowind=all_choices.index(move_pair[0])
+                        colind=all_choices.index(move_pair[1])
+                        kid_table[rowind, colind]+=1
 
-            independent_p=np.zeros(2) #independent distribution. [0] is Repeat, [1] is Alternate.
-            actual_p=np.zeros(2) #same from actual data. 
-            for i in range(len(kid_marginal)):
-                for j in range(len(kid_marginal)):
-                    independent_p[i!=j]+=kid_marginal[i]*kid_marginal[j]
-                    actual_p[i!=j]+=kid_table[i,j]
-            
-            #scale to data counts
-            independent_p=independent_p*sum(actual_p)
-            
-            #use goodness of fit!
-            #G, pval, dof=utils.G_independence(np.array([actual_p, independent_p]))
-            G, pval, dof=utils.G_goodness_of_fit(actual_p, independent_p)
-            table=np.array([actual_p, independent_p])
-            phi=table[0,0]/table[0,1]-table[1,0]/table[1,1]
+                independent_p=np.zeros(2) #independent distribution. [0] is Repeat, [1] is Alternate.
+                actual_p=np.zeros(2) #same from actual data. 
+                for i in range(len(kid_marginal)):
+                    for j in range(len(kid_marginal)):
+                        independent_p[i!=j]+=kid_marginal[i]*kid_marginal[j]
+                        actual_p[i!=j]+=kid_table[i,j]
+                
+                #scale to data counts
+                independent_p=independent_p*sum(actual_p)
+                
+                #use goodness of fit!
+                #G, pval, dof=utils.G_independence(np.array([actual_p, independent_p]))
 
-            #surrogate for statistics on phi.
-            #sample from binomial with n=data amount of choices, theta=independent ratio of one choice over total amount.
-            n_samples=1000
-            phi_MC=np.zeros(n_samples)
-            if sum(actual_p)>0:  
-                for i in range(n_samples):
-                    RD=np.random.binomial(sum(actual_p), independent_p[1]/sum(independent_p))
-                    AD=sum(actual_p)-RD
-                    phi_MC[i]=float(RD)/AD-independent_p[0]/independent_p[1] 
-            else:
-                phi_MC[i]=0
+                table=np.array([actual_p, independent_p])
+                if np.all(np.isfinite(table)):
+                    total_table+=table
+                poc=table[0,0]/table[0,1]-table[1,0]/table[1,1]
+                if np.isfinite(poc):
+                    phi+=poc
 
-            p_phi=float(sum(phi<np.abs(phi_MC)))/n_samples
-            return phi, p_phi, G, pval, dof
+
+
+        G, pval, dof=utils.G_goodness_of_fit(total_table[0,:], total_table[1,:])
         
+
+        #THIS WAS PRE-MULTISTATE.. CHECK!
+        #surrogate for statistics on phi.
+        #sample from binomial with n=data amount of choices, theta=independent ratio of one choice over total amount.
+        n_samples=1000
+        phi_MC=np.zeros(n_samples)
+        if sum(total_table[0,:])>0:  
+            for i in range(n_samples):
+                RD=np.random.binomial(sum(total_table[0,:]), total_table[0,1]/sum(total_table[1,:]))
+                AD=sum(total_table[0,:])-RD
+                phi_MC[i]=float(RD)/AD-total_table[1,0]/total_table[1,1]
         else:
-            return None, None, None, None, None
-            
+            phi_MC[i]=0
+
+        p_phi=float(sum(phi<np.abs(phi_MC)))/n_samples
+
+
+        print "phi: ", phi
+        return phi, p_phi, G, pval, dof
+    
+        #else:
+         #   return None, None, None, None, None

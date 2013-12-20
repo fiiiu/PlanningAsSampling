@@ -117,13 +117,13 @@ class HouseWorldData:
 
         
 
-    def select_actions(self, initial_state, subjects=None, filter_correct=False, tag_consecutives=False):
+    def select_actions(self, initial_states, subjects=None, filter_correct=False, tag_consecutives=False):
 
         """
         Selects action for given initial state and subjects, possibly filtering successful trials.
 
         Args:
-            initial_state: initial state.
+            initial_states: initial states.
             subjects (list): subjects to include.
             filter_correct (bool): whether to filter for successful trials.
             tag_consecutives (bool): whether to tag trials with no intermediates with different initial state
@@ -132,33 +132,43 @@ class HouseWorldData:
             moves (list): list of selected moves.
             consecutives (list of bool): list of whether moves are consecutive in play or not.
         """
-     
+        #produce a len 1 list if single state provided
+        if type(initial_states) is not list:
+            initial_states=[initial_states]
+        #match state orthography to that in raw data
+        initial_states=[self.raw_state(state) for state in initial_states]
+
         dates=[]
         moves=[]
         consecutives=[]
+        start_states=[]
         
         if subjects is None:
             subjects=set(self.subject_ids)
         
         for trial in range(self.trial_amount):
             if self.subject_ids[trial] in subjects and\
-             self.initial_states[trial] ==self.raw_state(initial_state):
+             self.initial_states[trial] in initial_states:
+
                 if filter_correct:
+                    print "WARNING: filter_correct & tag_consecutives options not compatible"
                     if self.successes[trial]==1:
                         dates.append(self.dates[trial])
                         moves.append(tuple(self.movess[trial][0]))
                 else:
                     dates.append(self.dates[trial])
                     moves.append(tuple(self.movess[trial][0]))
+                    start_states.append(self.initial_states[trial])
                     if tag_consecutives:
                         if trial==0:
-                            consecutives.append(True)
+                            consecutives.append(False)
                         else:
+                            #I keep consecutives ONLY IF STARTING IN SAME STATE (even if I'm selecting for more than 1 state).
                             consecutives.append(self.initial_states[trial]==self.initial_states[trial-1])
 
 
         if tag_consecutives:
-            return dates, moves, consecutives
+            return dates, moves, consecutives, start_states
         else:
             return dates, moves
             

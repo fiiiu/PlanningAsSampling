@@ -35,6 +35,11 @@ class CorrelationAnalyzer:
         self.perfo=np.zeros(len(self.data.get_subjects()), dtype=float)
         self.state_perfo=np.zeros(len(self.data.get_subjects()), dtype=float)
 
+        self.phi_allstate=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.phi_p_allstate=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_G_allstate=np.zeros(len(self.data.get_subjects()), dtype=float)
+        self.alt_p_allstate=np.zeros(len(self.data.get_subjects()), dtype=float)
+        
         for index, subject in enumerate(self.data.get_subjects()):
             self.age[index]=self.data.get_age(subject).as_number()
             self.sex[index]=self.data.get_sex(subject, boolean=True)
@@ -51,7 +56,9 @@ class CorrelationAnalyzer:
             self.independence.kid_alternance(subject)
             self.perfo[index]=self.data.get_performance(subject)
             self.state_perfo[index]=self.data.get_performance(subject, parameters.starting_state)
-
+            
+            self.phi_allstate[index], self.phi_p_allstate[index], self.alt_G_allstate[index], self.alt_p_allstate[index], _=\
+            self.independence.kid_alternance(subject, self.independence.parser.world.state_names)
 
   
     def filter_oldie(self):
@@ -212,4 +219,33 @@ class CorrelationAnalyzer:
         self.plot_and_correlate(x,y)
 
 
-    
+    def phiallstate(self):
+        print self.phi_allstate[np.isfinite(self.phi_allstate)]
+        plt.hist(self.phi_allstate[np.isfinite(self.phi_allstate)])
+        plt.show()
+
+    def phipallstate(self):
+        print "median p: {0}".format(np.median(self.phi_p_allstate))
+        plt.hist(self.phi_p_allstate)
+        plt.show()
+
+    def Gallstate(self):
+        plt.hist(self.alt_G_allstate)
+        plt.show()
+
+    def pallstate(self):
+        print "median p: {0}".format(np.median(self.alt_p_allstate))
+        plt.hist(self.alt_p_allstate)
+        plt.show()
+
+    def asph_vs_surgency(self):
+        x=self.phi_allstate[np.isfinite(self.phi_allstate) & (self.surgency > 0)]
+        y=self.surgency[np.isfinite(self.phi_allstate) & (self.surgency > 0)]
+        
+        self.plot_and_correlate(x,y)
+
+    def asG_vs_surgency(self):
+        x=self.alt_G_allstate[np.isfinite(self.alt_G_allstate) & (self.surgency > 0)]
+        y=self.surgency[np.isfinite(self.alt_G_allstate) & (self.surgency > 0)]
+        
+        self.plot_and_correlate(x,y)

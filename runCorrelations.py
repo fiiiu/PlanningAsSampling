@@ -41,8 +41,14 @@ ca.compute()
 #ca.phi_vs_phip()
 
 
-ca.phi_vs_perfo()
+#ca.phi_vs_perfo()
+#ca.phi_vs_stateperfo()
 
-ca.phi_vs_stateperfo()
 
+# ca.phiallstate()
+# ca.phipallstate()
+# ca.Gallstate()
+# ca.pallstate()
 
+#ca.asph_vs_surgency()
+ca.asG_vs_surgency()
