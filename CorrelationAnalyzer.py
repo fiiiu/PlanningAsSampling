@@ -18,7 +18,7 @@ class CorrelationAnalyzer:
         self.independence=IndependenceAnalyzer.IndependenceAnalyzer()
 
 
-    def compute(self):
+    def compute(self, incorrect=False):
 
         self.G=np.zeros(len(self.data.get_subjects()), dtype=float)
         self.age=np.zeros(len(self.data.get_subjects()), dtype=int)
@@ -53,12 +53,12 @@ class CorrelationAnalyzer:
                 self.effcontrol[index]=effcontrol
 
             self.phi[index], self.phi_p[index], self.alt_G[index], self.alt_p[index], self.alt_dof[index]=\
-            self.independence.kid_alternance(subject)
+            self.independence.kid_alternance(subject, incorrect=incorrect)
             self.perfo[index]=self.data.get_performance(subject)
             self.state_perfo[index]=self.data.get_performance(subject, parameters.starting_state)
             
             self.phi_allstate[index], self.phi_p_allstate[index], self.alt_G_allstate[index], self.alt_p_allstate[index], _=\
-            self.independence.kid_alternance(subject, self.independence.parser.world.state_names)
+            self.independence.kid_alternance(subject, self.independence.parser.world.state_names, incorrect)
 
   
     def filter_oldie(self):
@@ -192,7 +192,9 @@ class CorrelationAnalyzer:
 
 
     def phi_hist(self):
+        print "mean phi={0}, phi amount={1}".format(np.mean(self.phi[np.isfinite(self.phi)]), len(self.phi[np.isfinite(self.phi)]))
         print "one sample t-test for mean different from 0, p={0}".format(stats.ttest_1samp(self.phi[np.isfinite(self.phi)], 0))
+        print "{0} kids with phi>0, {1} with phi<0".format(sum(self.phi[np.isfinite(self.phi)]>0), sum(self.phi[np.isfinite(self.phi)]<0))
         plt.hist(self.phi[np.isfinite(self.phi)])
         plt.show()
 

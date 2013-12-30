@@ -72,14 +72,14 @@ class IndependenceAnalyzer:
             return None
 
 
-    def markov_intraday(self, consecutives=False):
+    def markov_intraday(self, consecutives=False, incorrect=False):
         all_choices=[self.parser.world.action_descriptions[action]
          for action in self.parser.world.legal_actions(self.initial_state)]
         nchoices=len(all_choices)
         table=np.zeros((nchoices, nchoices))
 
         for subject in self.parser.data.get_subjects():
-            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives)
+            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives, filter_incorrect=incorrect)
             if move_choices is not None:
                 for daily_moves in move_choices:
                     for move_pair in zip(daily_moves, daily_moves[1:]):
@@ -90,7 +90,7 @@ class IndependenceAnalyzer:
         return table, utils.G_independence(table)
 
 
-    def alternance_analysis(self, consecutives=False):
+    def alternance_analysis(self, consecutives=False, incorrect=False):
         all_choices=[self.parser.world.action_descriptions[action]
          for action in self.parser.world.legal_actions(self.initial_state)]
         nchoices=len(all_choices)
@@ -101,7 +101,7 @@ class IndependenceAnalyzer:
         dof=np.zeros(len(subjects))
         
         for ind, subject in enumerate(subjects):
-            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives)
+            days, move_choices=self.parser.intraday_choices(subject, self.initial_state, filter_consecutives=consecutives, filter_incorrect=incorrect)
             if move_choices is not None:
                 #compute marginal
                 kid_marginal=np.zeros(nchoices)
@@ -144,7 +144,7 @@ class IndependenceAnalyzer:
         return table, (Gt,pvalt,doft), (G, pval, dof)
 
 
-    def kid_alternance(self, subject, initial_states=None):
+    def kid_alternance(self, subject, initial_states=None, incorrect=False):
 
         total_table=np.zeros((2,2))
         phi=0
@@ -159,7 +159,7 @@ class IndependenceAnalyzer:
         
             nchoices=len(all_choices)
 
-            days, move_choices=self.parser.intraday_choices(subject, initial_state)
+            days, move_choices=self.parser.intraday_choices(subject, initial_state, filter_incorrect=incorrect)
             #compute marginal
             kid_marginal=np.zeros(nchoices)
             if move_choices is not None:
@@ -207,13 +207,13 @@ class IndependenceAnalyzer:
         #sample from binomial with n=data amount of choices, theta=independent ratio of one choice over total amount.
         n_samples=1000
         phi_MC=np.zeros(n_samples)
-        if sum(total_table[0,:])>0:  
-            for i in range(n_samples):
-                RD=np.random.binomial(sum(total_table[0,:]), total_table[0,1]/sum(total_table[1,:]))
-                AD=sum(total_table[0,:])-RD
-                phi_MC[i]=float(RD)/AD-total_table[1,0]/total_table[1,1]
-        else:
-            phi_MC[i]=0
+        # if sum(total_table[0,:])>0:  
+        #     for i in range(n_samples):
+        #         RD=np.random.binomial(sum(total_table[0,:]), total_table[0,1]/sum(total_table[1,:]))
+        #         AD=sum(total_table[0,:])-RD
+        #         phi_MC[i]=float(RD)/AD-total_table[1,0]/total_table[1,1]
+        # #else:
+        #    phi_MC[i]=0
 
         p_phi=float(sum(phi<np.abs(phi_MC)))/n_samples
 

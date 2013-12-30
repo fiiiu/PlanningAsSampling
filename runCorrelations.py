@@ -4,7 +4,7 @@ import CorrelationAnalyzer
 
 ca=CorrelationAnalyzer.CorrelationAnalyzer()
 
-ca.compute()
+ca.compute()#incorrect=True)
 
 #ca.G_vs_sex()
 
@@ -36,7 +36,7 @@ ca.compute()
 #ca.alt_vs_effcontrol(phi=True)
 
 
-#ca.phi_hist()
+ca.phi_hist()
 #ca.phi_ps()
 #ca.phi_vs_phip()
 

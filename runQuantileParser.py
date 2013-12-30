@@ -3,6 +3,7 @@
 import IndependenceAnalyzer
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 
 ia=IndependenceAnalyzer.IndependenceAnalyzer()
 
@@ -16,6 +17,12 @@ for ind, subject in enumerate(subjects):
     resi=ia.G(subject)
     if resi is not None:
         Gi[ind],pvali[ind],dofi[ind]=resi
+
+Gsum=sum(Gi)
+dofsum=sum(dofi)
+pvalue=1-stats.chi2.cdf(Gsum,dofsum)
+
+print 'Gsum={0}, dof={1}, p={2}'.format(Gsum, dofsum, pvalue)
 
 
 print 'p median={0}'.format(np.median(pvali))

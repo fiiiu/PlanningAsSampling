@@ -17,7 +17,7 @@ class DataParser:
         """
         Parses subject choices by day.
         """
-        dates, moves=self.data.select_actions(initial_state, subjects=[subject_id], filter_correct=False)
+        dates, moves=self.data.select_actions(initial_state, subjects=[subject_id], filter_incorrect=False)
         if len(dates)>0:
             days, move_choices=self.parse_in_days(dates, moves, initial_state, surrogate=False)
             return days, move_choices
@@ -223,14 +223,14 @@ class DataParser:
 
 
 
-    def intraday_choices(self, subject_id, initial_states, surrogate=False, filter_consecutives=False):
+    def intraday_choices(self, subject_id, initial_states, surrogate=False, filter_consecutives=False, filter_incorrect=False):
         """
         CAREFUL WHEN USING MANY INITIAL STATES, DOESN'T REALLY MAKE SENSE.. MIXING STATES IN MOVE OUTPUT.
         """
         if filter_consecutives:
-            dates, moves, consecutives, start_states=self.data.select_actions(initial_states, subjects=[subject_id], filter_correct=False, tag_consecutives=True)
+            dates, moves, consecutives, start_states=self.data.select_actions(initial_states, subjects=[subject_id], filter_incorrect=filter_incorrect, tag_consecutives=True)
         else:
-            dates, moves=self.data.select_actions(initial_states, subjects=[subject_id], filter_correct=False)
+            dates, moves=self.data.select_actions(initial_states, subjects=[subject_id], filter_incorrect=filter_incorrect)
             consecutives=None
             start_states=None
 

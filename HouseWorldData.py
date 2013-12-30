@@ -117,7 +117,7 @@ class HouseWorldData:
 
         
 
-    def select_actions(self, initial_states, subjects=None, filter_correct=False, tag_consecutives=False):
+    def select_actions(self, initial_states, subjects=None, filter_incorrect=False, tag_consecutives=False):
 
         """
         Selects action for given initial state and subjects, possibly filtering successful trials.
@@ -125,7 +125,7 @@ class HouseWorldData:
         Args:
             initial_states: initial states.
             subjects (list): subjects to include.
-            filter_correct (bool): whether to filter for successful trials.
+            filter_incorrect (bool): whether to filter for unsuccessful trials.
             tag_consecutives (bool): whether to tag trials with no intermediates with different initial state
         Returns:
             dates (list): list of selected dates.
@@ -150,9 +150,11 @@ class HouseWorldData:
             if self.subject_ids[trial] in subjects and\
              self.initial_states[trial] in initial_states:
 
-                if filter_correct:
-                    print "WARNING: filter_correct & tag_consecutives options not compatible"
-                    if self.successes[trial]==1:
+                if filter_incorrect:
+                    if tag_consecutives:
+                        print "WARNING: filter_incorrect & tag_consecutives options not compatible, returning!"
+                        return
+                    if self.successes[trial]==0:
                         dates.append(self.dates[trial])
                         moves.append(tuple(self.movess[trial][0]))
                 else:
